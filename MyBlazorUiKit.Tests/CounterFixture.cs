@@ -157,5 +157,57 @@ namespace MyBlazorUiKit.Tests
                <button class=""btn btn-secondary"">Click me to decrement</button>
 ");
         }
+
+        [Test]
+        public void ServiceInject_Increment10_ShowValue()
+        {
+            service.Setup(o => o.Increment(It.IsAny<int>()))
+                .Returns((int v) => v + 10);
+
+            var counter = ctx.RenderComponent<Counter>();
+            counter.SaveSnapshot();
+
+            var button = counter.Find(".btn-primary");
+            button.Click();
+
+            var diff = counter.GetChangesSinceSnapshot();
+
+            diff.ShouldHaveSingleTextChange("Current count: 10", null);
+        }
+
+        [Test]
+        public void ServiceInjectParameterDefaultCountAndEventCallBack_Increment10_ShowValue()
+        {
+            var currentValue = -1;
+            service.Setup(o => o.Increment(It.IsAny<int>()))
+                .Returns((int v) => v + 10);
+
+            var defaultCount = ComponentParameterFactory.Parameter("DefaultCount", 10);
+            var callback = ComponentParameterFactory.EventCallback("OnNewCountValue", (int value) => currentValue = value);
+            var counter = ctx.RenderComponent<Counter>(defaultCount, callback);
+
+            var button = counter.Find(".btn-primary");
+            button.Click();
+
+            Assert.AreEqual(20, currentValue);
+        }
+
+        [Test]
+        public void ServiceThowExpection_ShowMessageError()
+        {
+            service.Setup(o => o.Increment(It.IsAny<int>()))
+                .Throws(new InvalidOperationException("not work"));
+
+            var counter = ctx.RenderComponent<Counter>();
+            var button = counter.Find(".btn-primary");
+            button.Click();
+
+            counter.MarkupMatches(@"<h1>Counter</h1>
+               <p role=""status"">Current count: 0</p>
+               <button class=""btn btn-primary"">Click me to increment</button>
+               <button class=""btn btn-secondary"">Click me to decrement</button>
+               <h2 class=""alert-warning"">Error: not work</h2>
+");
+        }
     }
 }

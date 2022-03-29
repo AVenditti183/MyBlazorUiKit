@@ -5,8 +5,12 @@
 
 <button class="btn btn-primary" @onclick="IncrementCount">Click me to increment</button>
 <button class="btn btn-secondary" @onclick="DecrementCount">Click me to decrement</button>
+@if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <h2 class="alert-warning">Error: @errorMessage</h2>
+}
 @code {
-
+    private string? errorMessage = null;
 
     protected override void OnInitialized()
     {
@@ -17,21 +21,37 @@
     public int DefaultCount { get; set; }
 
     [Parameter]
-    public EventCallback<int> OnNewCountValue { get; set; }
+    public EventCallback<int> OnNewCountValue { get; set; }  
 
     private int currentCount = 0;
 
     private async Task IncrementCount()
     {
-        currentCount = service.Increment(currentCount);
-        if (OnNewCountValue.HasDelegate)
-            await OnNewCountValue.InvokeAsync(currentCount);
+        errorMessage = null;
+        try
+        {
+            currentCount = service.Increment(currentCount);
+            if(OnNewCountValue.HasDelegate)
+                await OnNewCountValue.InvokeAsync(currentCount);
+        }
+        catch(Exception e)
+        {
+            errorMessage = e.Message;
+        }
     }
 
     private async Task DecrementCount()
     {
-        currentCount--;
-        if (OnNewCountValue.HasDelegate)
-            await OnNewCountValue.InvokeAsync(currentCount);
+        errorMessage = null;
+        try
+        {
+            currentCount = service.Decrement(currentCount);
+            if (OnNewCountValue.HasDelegate)
+                await OnNewCountValue.InvokeAsync(currentCount);
+        }
+        catch (Exception e)
+        {
+            errorMessage = e.Message;
+        }
     }
 }
