@@ -1,0 +1,23 @@
+﻿@page "/"
+
+<PageTitle>Index</PageTitle>
+
+<h1>Hello, world!</h1>
+
+Welcome to your new app.
+
+<h3>value couter: @valueCounter</h3>
+<SurveyPrompt Title="How is Blazor working for you?" />
+
+<Counter DefaultCount="20" OnNewCountValue="@(v => ChangeValueCouter(v))"></Counter>
+
+@code
+{
+    private int valueCounter=20;
+
+    private void ChangeValueCouter(int v)
+    {
+        valueCounter = v;
+        //StateHasChanged();
+    }
+}
